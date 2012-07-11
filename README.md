@@ -7,15 +7,26 @@ The proxy introduces an additional "serviceUrl" query string parameter which sup
 Note that this proxy consists of a single file that only does the forwarding of requests and response (headers).
 If you are looking for a proxy that also features a UI, you may want to check out `http://logd.tw.rpi.edu/ws/sparqlproxy.php`.
 
+## Filtering
+The serviceUrl parameter is processed as follows:
+ * Only host name, port and path are retained, all other URI components are discarded.
+
+From the request url, the following processing is performed:
+ * Fragments (#something) are removed
+ * Only the query string arguments `query`, `format`, `timeout` are retained. **TODO Support at least all arguments by SPARQL spec **
+
 ## Deployment (Ubuntu):
 You need apache, php and php-curl installed:
+
     sudo apt-get install libapache2-mod-php5 php5-curl
 
 Make the script accessible via apache, e.g.
- * Clone the project
- *     cp sparql-proxy.php /var/www
+
+    cp sparql-proxy.php /var/www
 
 ## Example Usage:
+The following example requests the first 3 results from [LinkedGeoData](http://linkedgeodata.org).
+
     curl http://localhost/sparql-proxy.php?serviceUrl=http%3A%2F%2Flinkedgeodata.org%2Fsparql&query=Select+%2A+%7B+%3Fs+%3Fp+%3Fo+%7D+Limit+3
 
 
