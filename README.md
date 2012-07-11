@@ -7,6 +7,9 @@ The proxy introduces an additional "serviceUrl" query string parameter which sup
 Note that this proxy consists of a single file that only does the forwarding of requests and response (headers).
 If you are looking for a proxy that also features a UI, you may want to check out `http://logd.tw.rpi.edu/ws/sparqlproxy.php`.
 
+## Warning
+Right now it is still possible to access arbitrary sites with it. There has to be added some checks whether the target is actually a SPARQL endpoint (otherwise illegal content could be obtained via the proxy). The probably simplest filtering would be the requirement, that the service-url has to end in `/sparql`.
+
 ## Filtering
 The serviceUrl parameter is processed as follows:
  * Only host name, port and path are retained, all other URI components are discarded.
