@@ -78,7 +78,7 @@ $finalUrl = "$serviceUrl?$validArgsStr";
 $requestHeaders = getallheaders();
 
 
-print_r($requestHeaders);
+//print_r($requestHeaders);
 
 $ignoreHeaders = array("Host");
 
@@ -93,7 +93,7 @@ foreach($requestHeaders as $k => $v) {
 }
 
 
-print_r($headers);
+//print_r($headers);
 
 $ch = curl_init();
 
