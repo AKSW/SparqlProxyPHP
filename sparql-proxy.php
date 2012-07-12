@@ -38,8 +38,8 @@ function validateProxyUrl($url) {
 	return $result;
 }
 
-if(isset($_REQUEST['service-url'])) {
-	$rawServiceUrl = $_REQUEST['service-url'];
+if(isset($_REQUEST['service-uri'])) {
+	$rawServiceUrl = $_REQUEST['service-uri'];
 
 	$serviceUrl = validateProxyUrl($rawServiceUrl);
 } else {
