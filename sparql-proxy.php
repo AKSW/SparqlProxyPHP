@@ -30,7 +30,7 @@ function validateProxyUrl($url) {
 	// TODO Check for user, pass, query, fragment; rather than just discarding them silently
 
 	$host = $u["host"];
-	$port = isset($u["port"]) ? ":$port" : "";
+        $port = isset($u["port"]) ? (":" . $u["port"]) : "";
 	$path = $u["path"];
 
 	$result = "$scheme://$host$port$path";
