@@ -11,7 +11,7 @@ $defaultServiceUrl = "http://localhost:8890/sparql";
  * Fragments are removed
  *
  */
-$allowedParams = array("format", "query", "timeout");
+$allowedParams = array("format", "query", "timeout", "default-graph-uri");
 
 
 
