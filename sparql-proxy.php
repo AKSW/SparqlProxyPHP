@@ -1,22 +1,35 @@
 <?php
 
+/*****************************************************************************/
+/* Configuration                                                             */
+/*****************************************************************************/
+
 error_reporting(E_ERROR);
 
 // Note: The defaultServiceUrl is not subject to proxy url validation.
 $defaultServiceUrl = "http://localhost:8890/sparql";
 
 
-/*
- * For security reasons, only SPARQL query string parameters are forwarded.
- * Fragments are removed
- *
- */
+// For security reasons, only SPARQL query string parameters are forwarded.
 $allowedParams = array("format", "query", "timeout", "default-graph-uri");
 
 
 
 $serviceUrl = null;
 
+// Request headers that should not be forwarded to the target address
+$ignoreRequestHeaders = array("host");
+
+
+// Response headers that should not be returned to the client
+// We ignore transfer encoding because curl already retrieves the full response
+// Note: Unfortunately no streaming - feel free to contribute :)
+$ignoreResponseHeaders=array("transfer-encoding");
+
+
+/*****************************************************************************/
+/* Business Logic                                                            */
+/*****************************************************************************/
 
 function validateProxyUrl($url) {
 	$u = parse_url($url);
@@ -27,7 +40,7 @@ function validateProxyUrl($url) {
 	        die;
 	}
 
-	// TODO Check for user, pass, query, fragment; rather than just discarding them silently
+	// TODO Check for user, pass, query; rather than just discarding them silently
 
 	$host = $u["host"];
         $port = isset($u["port"]) ? (":" . $u["port"]) : "";
@@ -80,21 +93,22 @@ $requestHeaders = getallheaders();
 
 //print_r($requestHeaders);
 
-$ignoreHeaders = array("Host");
 
 $headers = array();
 foreach($requestHeaders as $k => $v) {
 
-	if(in_array($k, $ignoreHeaders)) {
+	if(in_array(strtolower($k), $ignoreRequestHeaders)) {
 		continue;
 	}
 
 	array_push($headers, "$k: $v");
 }
 
-
 //print_r($headers);
 
+
+
+// Prepare and perform the request
 $ch = curl_init();
 
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -110,13 +124,30 @@ $info = curl_getinfo($ch);
 curl_close($ch);
 
 
-$responseHeader = substr($response, 0, $info['header_size']);
-$body = substr($response, -$info['download_content_length']); 
+//error_log($info['download_content_length']);
+//error_log($response);
 
+$headerSize = $info['header_size'];
+$responseHeader = substr($response, 0, $headerSize);
+$body = substr($response, $headerSize);
+
+
+// The old way I used breaks with chunked transfer - lets of the current
+// approach is more robust
+##$body = substr($response, -$info['download_content_length']); 
+
+
+// Exclude ignored response headers
 foreach (explode("\r\n",$responseHeader) as $hdr) {
+	list($k, $v) = explode(":", $hdr, 2);
+	$k = strtolower(trim($k));
+
+	if($k == '' || in_array($k, $ignoreResponseHeaders)) {
+		continue;
+	}
+
     header($hdr);
 }
 
 echo "$body";
-
 
