@@ -16,7 +16,6 @@ The service-uri parameter is processed as follows:
  * Only host name, port and path are retained, all other URI components are discarded.
 
 From the request url, the following processing is performed:
- * Fragments (#something) are removed
  * Only the query string arguments `query`, `format`, `timeout` are retained. **TODO Support at least all arguments by SPARQL spec **
 
 ## Deployment (Ubuntu):
