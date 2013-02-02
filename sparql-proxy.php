@@ -1,10 +1,13 @@
 <?php
 
+// Unless we succeed we fail
+header('HTTP/1.1 500 Internal Server Error', true, 500);
+error_reporting(E_ALL);
+
+
 /*****************************************************************************/
 /* Configuration                                                             */
 /*****************************************************************************/
-
-error_reporting(E_ERROR);
 
 // Note: The defaultServiceUrl is not subject to proxy url validation.
 $defaultServiceUrl = "http://localhost:8890/sparql";
@@ -25,6 +28,28 @@ $ignoreRequestHeaders = array("host");
 // We ignore transfer encoding because curl already retrieves the full response
 // Note: Unfortunately no streaming - feel free to contribute :)
 $ignoreResponseHeaders=array("transfer-encoding");
+
+
+/*****************************************************************************/
+/* Utility                                                                   */
+/*****************************************************************************/
+function isCurlAvailable() {
+	//$result = function_exists('curl_version') == 'Enabled';
+	$result = is_callable('curl_init');
+	return $result;
+}
+
+if(!isCurlAvailable()) {
+	//header('HTTP/1.1 500 Internal Server Error');
+	//header('HTTP/1.1 200 OK');
+
+	//throw new Exception('Curl is not available on this system.');
+	echo "Cannot serve request because PHP curl is not available.";
+	die;
+
+	//return 1;
+}
+
 
 
 /*****************************************************************************/
@@ -104,12 +129,17 @@ foreach($requestHeaders as $k => $v) {
 	array_push($headers, "$k: $v");
 }
 
+
 //print_r($headers);
 
 
 
 // Prepare and perform the request
 $ch = curl_init();
+if($ch === FALSE) {
+    echo "Failed to initialize curl";
+    die;
+}
 
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
@@ -119,6 +149,17 @@ curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
 $response = curl_exec($ch);
+if($response === FALSE) {
+    $errMsg = curl_error($ch);
+    $errCode = curl_errno($ch);
+
+    echo "Error communicating with service at: $serviceUrl\n";
+    echo "Curl error code $errCode: $errMsg";
+    die;
+}
+
+
+//echo "Response is $response\n";
 
 $info = curl_getinfo($ch);
 curl_close($ch);
@@ -149,5 +190,6 @@ foreach (explode("\r\n",$responseHeader) as $hdr) {
     header($hdr);
 }
 
+header('HTTP/1.1 200 OK', true, 200);
 echo "$body";
 
