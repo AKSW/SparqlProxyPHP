@@ -167,6 +167,11 @@ curl_close($ch);
 
 //error_log($info['download_content_length']);
 //error_log($response);
+//$httpStatus = $info['CURLINFO_HTTP_CODE'];
+//header('HTTP/1.1 200 OK', true, 200);
+//echo "Status: $httpStatus";
+
+$statusCode = $info['http_code'];
 
 $headerSize = $info['header_size'];
 $responseHeader = substr($response, 0, $headerSize);
@@ -178,18 +183,29 @@ $body = substr($response, $headerSize);
 ##$body = substr($response, -$info['download_content_length']); 
 
 
+//$statusMsg = "HTTP/1.1 200 OK";
 // Exclude ignored response headers
 foreach (explode("\r\n",$responseHeader) as $hdr) {
-	list($k, $v) = explode(":", $hdr, 2);
-	$k = strtolower(trim($k));
+        $tmp = explode(":", $hdr, 2);
+	if(count($tmp) != 2) {
+		// This is the HTTP status code
+		$statusMsg = $tmp[0];
+        } else {
 
-	if($k == '' || in_array($k, $ignoreResponseHeaders)) {
-		continue;
+		list($k, $v) = $tmp;
+		$k = strtolower(trim($k));
+
+		if($k == '' || in_array($k, $ignoreResponseHeaders)) {
+			continue;
+		}
 	}
 
     header($hdr);
 }
 
-header('HTTP/1.1 200 OK', true, 200);
+//header('HTTP/1.1 200 OK', true, 200);
+//echo $statusMsg;
+//die;
+//header($statusMsg, true, $statusCode);
 echo "$body";
 
